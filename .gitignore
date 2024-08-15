@@ -34,4 +34,12 @@ coverage
 # Environment variables
 .env
 .env.test
+
+# lock files
+bun.lockb
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# npm
 .npmignore
