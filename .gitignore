@@ -34,3 +34,4 @@ coverage
 # Environment variables
 .env
 .env.test
+.npmignore
