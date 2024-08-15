@@ -1,6 +1,6 @@
 {
   "name": "@jean-michelet/workflow",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Manage the life cycle of an entity.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
