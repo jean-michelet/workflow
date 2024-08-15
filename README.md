@@ -1,6 +1,6 @@
 # Workflow
 
-If you've been programming for a while, you've likely encountered workflows. They represent the various states and transitions that an entity can go through in a system.
+If you've been programming for a while, you've likely encountered workflows. They represent the various **states** and **transitions** that an entity can go through in a system.
 
 For example, let's say you're developing a blog and want to allow users to share posts. You'll need to establish some rules:
 
