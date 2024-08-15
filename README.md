@@ -10,6 +10,11 @@ For example, let's say you're developing a blog and want to allow users to share
 
 These kinds of questions can be tricky, and it's crucial to represent this logic clearly in your code.
 
+## Install
+```
+npm i @jean-michelet/workflow
+```
+
 ## Workflow class
 
 The `Workflow` class allows you to define transitions between different states. These transitions can be represented as simple state changes (`Transition`) or as transitions with multiple origins (`MultiOriginTransition`).
@@ -17,12 +22,14 @@ The `Workflow` class allows you to define transitions between different states. 
 In this example, the post can move from `draft` to `published`:
 
 ```ts
+import { Transition, Workflow } from "@jean-michelet/workflow";
+
 const workflow = new Workflow();
 
 workflow.addTransition("publish", new Transition("draft", "published"));
 
-workflow.can("publish", "draft"); // true
-workflow.can("publish", "published"); // false
+console.log(workflow.can("publish", "draft")); // true
+console.log(workflow.can("publish", "published")); // false
 ```
 
 ### Multi-Origin Transitions
@@ -32,6 +39,8 @@ A `MultiOriginTransition` allows an entity to transition to a single target stat
 In this example, the post can move to the `archived` state from either `aborted` or `completed` states:
 
 ```ts
+import { MultiOriginTransition, Workflow } from "@jean-michelet/workflow";
+
 const workflow = new Workflow();
 
 workflow.addTransition(
@@ -39,8 +48,8 @@ workflow.addTransition(
   new MultiOriginTransition(["aborted", "completed"], "archived")
 );
 
-workflow.can("archive", "aborted"); // true
-workflow.can("archive", "completed"); // true
+console.log(workflow.can("archive", "aborted")); // true
+console.log(workflow.can("archive", "completed")); // true
 ```
 
 ## ClassWorkflow class
@@ -52,6 +61,8 @@ The `ClassWorkflow` allows you to check and apply transitions directly to an ent
 Suppose you have a `Post` class with a `status` property that tracks the state of the post:
 
 ```ts
+import { ClassWorkflow, Transition } from "@jean-michelet/workflow";
+
 class Post {
   status = "draft";
 }
@@ -62,10 +73,6 @@ const wf = new ClassWorkflow({
 });
 
 wf.addTransition("publish", new Transition("draft", "published"));
-wf.addTransition(
-  "archive",
-  new MultiOriginTransition(["aborted", "completed"], "archived")
-);
 
 const post = new Post();
 
@@ -83,14 +90,22 @@ In this example, the `ClassWorkflow` manages the state transitions of the `Post`
 Both `Workflow` and `ClassWorkflow` support a `detectUnexpectedState` option. When enabled, this option throws an error if an entity is in an unexpected state that hasn't been accounted for in the transitions.
 
 ```ts
+import { ClassWorkflow, Transition } from "@jean-michelet/workflow";
+
+class Post {
+  status = "draft";
+}
+
 const wf = new ClassWorkflow({
   entity: Post,
   stateProperty: "status",
   detectUnexpectedState: true,
 });
 
+wf.addTransition("publish", new Transition("draft", "published"));
+
 const post = new Post();
 post.status = "unknown";
 
-wf.apply("publish", post); // throw an error "The instance has an unexpected state 'unknown'"
+wf.can("publish", post); // throw an error "The instance has an unexpected state 'unknown'"
 ```
