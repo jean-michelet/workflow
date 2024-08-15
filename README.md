@@ -14,16 +14,15 @@ These kinds of questions can be tricky, and it's crucial to represent this logic
 
 The `Workflow` class allows you to define transitions between different states. These transitions can be represented as simple state changes (`Transition`) or as transitions with multiple origins (`MultiOriginTransition`).
 
-### Example
-
 In this example, the post can move from `draft` to `published`:
+
 ```ts
 const workflow = new Workflow();
 
 workflow.addTransition("publish", new Transition("draft", "published"));
 
-workflow.can("draft", "publish"); // true
-workflow.can("published", "publish"); // false
+workflow.can("publish", "draft"); // true
+workflow.can("publish", "published"); // false
 ```
 
 ### Multi-Origin Transitions
@@ -31,6 +30,7 @@ workflow.can("published", "publish"); // false
 A `MultiOriginTransition` allows an entity to transition to a single target state from multiple states.
 
 In this example, the post can move to the `archived` state from either `aborted` or `completed` states:
+
 ```ts
 const workflow = new Workflow();
 
@@ -39,13 +39,13 @@ workflow.addTransition(
   new MultiOriginTransition(["aborted", "completed"], "archived")
 );
 
-workflow.can("aborted", "archive"); // true
-workflow.can("completed", "archive"); // true
+workflow.can("archive", "aborted"); // true
+workflow.can("archive", "completed"); // true
 ```
 
 ## ClassWorkflow class
 
-The `ClassWorkflow` allows you to apply transitions directly to an entity’s state property. It is particularly useful when working with classes that have a specific property representing their state.
+The `ClassWorkflow` allows you to check and apply transitions directly to an entity’s state property. It is particularly useful when working with classes that have a specific property representing their state.
 
 ### Example
 
@@ -69,14 +69,14 @@ wf.addTransition(
 
 const post = new Post();
 
-if (wf.can(post, "publish")) {
-  wf.apply(post, "publish");
+if (wf.can("publish", post)) {
+  wf.apply("publish", post);
 }
 
 console.log(post.status); // Output: "published"
 ```
 
-In this example, the `ClassWorkflow` manages the state transitions of the `Post` instance. The `apply` method automatically updates the entity's `status` property based on the defined transitions. If the transition isn't allowed, an error is thrown, ensuring that invalid transitions are handled properly.
+In this example, the `ClassWorkflow` manages the state transitions of the `Post` instance. The `apply` method automatically updates the entity's `status` property based on the defined transitions. If the transition isn't allowed, an error is thrown.
 
 ### Handling unexpected states
 
@@ -92,5 +92,5 @@ const wf = new ClassWorkflow({
 const post = new Post();
 post.status = "unknown";
 
-wf.apply(post, "publish"); // throw an error "The instance has an unexpected state 'unknown'"
+wf.apply("publish", post); // throw an error "The instance has an unexpected state 'unknown'"
 ```

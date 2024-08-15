@@ -81,7 +81,7 @@ export class Workflow extends BaseWorkflow {
    * If success, return the next state
    * If fails, return null
    */
-  can(currentState: State, transitionName: string) {
+  can(transitionName: string, currentState: State) {
     const transition = this.getTransition(transitionName);
 
     const state = transition.tryTransition(currentState);
@@ -120,7 +120,7 @@ export class ClassWorkflow<T> extends BaseWorkflow {
     this.validateProperty();
   }
 
-  can(instance: T, transitionName: string) {
+  can(transitionName: string, instance: T) {
     const currentState = instance[this.stateProperty] as unknown as
       | string
       | number;
@@ -136,7 +136,7 @@ export class ClassWorkflow<T> extends BaseWorkflow {
     return false;
   }
 
-  apply(instance: T, transitionName: string) {
+  apply(transitionName: string, instance: T) {
     const currentState = instance[this.stateProperty] as unknown as
       | string
       | number;

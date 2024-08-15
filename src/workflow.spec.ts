@@ -14,7 +14,7 @@ describe("BaseWorkflow - Common to all workflows", () => {
     });
 
     assert.throws(
-      () => wf.can("draft", "invalid_transition"),
+      () => wf.can("invalid_transition", "draft"),
       (error: Error) => {
         assert.strictEqual(
           error.message,
@@ -38,27 +38,27 @@ describe("Workflow", () => {
       new MultiOriginTransition(["aborted", "completed"], "archived")
     );
 
-    assert.ok(wf.can("draft", "publish"));
-    assert.ok(!wf.can("draft", "abort"));
-    assert.ok(!wf.can("draft", "complete"));
-    assert.ok(!wf.can("draft", "archive"));
+    assert.ok(wf.can("publish", "draft"));
+    assert.ok(!wf.can("abort", "draft"));
+    assert.ok(!wf.can("complete", "draft"));
+    assert.ok(!wf.can("archive", "draft"));
 
-    assert.ok(!wf.can("published", "publish"));
-    assert.ok(wf.can("published", "abort"));
-    assert.ok(wf.can("published", "complete"));
-    assert.ok(!wf.can("published", "archive"));
+    assert.ok(!wf.can("publish", "published"));
+    assert.ok(wf.can("abort", "published"));
+    assert.ok(wf.can("complete", "published"));
+    assert.ok(!wf.can("archive", "published"));
 
-    assert.ok(!wf.can("aborted", "publish"));
-    assert.ok(!wf.can("aborted", "abort"));
-    assert.ok(!wf.can("aborted", "complete"));
-    assert.ok(wf.can("aborted", "archive"));
+    assert.ok(!wf.can("publish", "aborted"));
+    assert.ok(!wf.can("abort", "aborted"));
+    assert.ok(!wf.can("complete", "aborted"));
+    assert.ok(wf.can("archive", "aborted"));
 
-    assert.ok(!wf.can("completed", "publish"));
-    assert.ok(!wf.can("completed", "abort"));
-    assert.ok(!wf.can("completed", "complete"));
-    assert.ok(wf.can("completed", "archive"));
+    assert.ok(!wf.can("publish", "completed"));
+    assert.ok(!wf.can("abort", "completed"));
+    assert.ok(!wf.can("complete", "completed"));
+    assert.ok(wf.can("archive", "completed"));
 
-    assert.ok(!wf.can("invalid", "publish"));
+    assert.ok(!wf.can("publish", "invalid"));
   });
 
   it("should detect unexpected state if 'detectUnexpectedState = true'", () => {
@@ -69,7 +69,7 @@ describe("Workflow", () => {
     wf.addTransition("publish", new Transition("draft", "published"));
 
     assert.throws(
-      () => wf.can("invalid", "publish"),
+      () => wf.can("publish", "invalid"),
       (error: Error) => {
         assert.strictEqual(
           error.message,
@@ -122,22 +122,22 @@ describe("ClassWorkflow", () => {
     );
 
     const post = new Post();
-    assert.ok(wf.can(post, "publish"));
-    assert.ok(!wf.can(post, "abort"));
-    assert.ok(!wf.can(post, "complete"));
-    assert.ok(!wf.can(post, "archive"));
+    assert.ok(wf.can("publish", post));
+    assert.ok(!wf.can("abort", post));
+    assert.ok(!wf.can("complete", post));
+    assert.ok(!wf.can("archive", post));
 
-    wf.apply(post, "publish");
-    assert.ok(!wf.can(post, "publish"));
-    assert.ok(wf.can(post, "abort"));
-    assert.ok(wf.can(post, "complete"));
-    assert.ok(!wf.can(post, "archive"));
+    wf.apply("publish", post);
+    assert.ok(!wf.can("publish", post));
+    assert.ok(wf.can("abort", post));
+    assert.ok(wf.can("complete", post));
+    assert.ok(!wf.can("archive", post));
 
-    wf.apply(post, "abort");
-    assert.ok(wf.can(post, "archive"));
+    wf.apply("abort", post);
+    assert.ok(wf.can("archive", post));
 
     assert.throws(
-      () => wf.apply(post, "complete"),
+      () => wf.apply("complete", post),
       (error: Error) => {
         assert.strictEqual(
           error.message,
@@ -182,7 +182,7 @@ describe("ClassWorkflow", () => {
     post.status = WorkflowStateEnum.Unused;
 
     assert.throws(
-      () => wf.can(post, "publish"),
+      () => wf.can("publish", post),
       (error: Error) => {
         assert.strictEqual(
           error.message,
