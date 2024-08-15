@@ -85,11 +85,11 @@ export class Workflow extends BaseWorkflow {
     const transition = this.getTransition(transitionName);
 
     const state = transition.tryTransition(currentState);
-    if (state) return state;
+    if (state) return true;
 
     this.doDetectUnexpectedState(currentState);
 
-    return null;
+    return false;
   }
 }
 
@@ -128,21 +128,26 @@ export class ClassWorkflow<T> extends BaseWorkflow {
     const transition = this.getTransition(transitionName);
     const nextState = transition.tryTransition(currentState);
     if (nextState !== null) {
-      return nextState;
+      return true;
     }
 
     this.doDetectUnexpectedState(currentState);
 
-    return null;
+    return false;
   }
 
   apply(instance: T, transitionName: string) {
-    const nextState = this.can(instance, transitionName);
+    const currentState = instance[this.stateProperty] as unknown as
+      | string
+      | number;
+
+    const transition = this.getTransition(transitionName);
+    const nextState = transition.tryTransition(currentState);
     if (!nextState) {
       throw new Error(
-        `Can't apply transition '${transitionName}' to current state ${
+        `Can't apply transition '${transitionName}' to current state '${
           instance[this.stateProperty]
-        }`
+        }'`
       );
     }
 
