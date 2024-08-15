@@ -1,0 +1,45 @@
+{
+  "name": "workflow",
+  "version": "1.0.0",
+  "description": "Manage the life cycle of an entity.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",         
+  "type": "module",
+  "files": [
+    "dist/**/*"                            
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc",  
+    "build:watch": "npm run build -- --watch",         
+    "lint": "npx eslint src",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "node --test --loader ts-node/esm src/**/*.spec.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jean-michelet/workflow.git"
+  },
+  "keywords": [
+    "workflow",
+    "state",
+    "machine",
+    "life",
+    "cycle"
+  ],
+  "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jean-michelet/workflow/issues"
+  },
+  "homepage": "https://github.com/jean-michelet/workflow#readme",
+  "dependencies": {
+    "@types/node": "^22.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/eslint__js": "^8.42.3",
+    "eslint": "^9.9.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
+  }
+}
