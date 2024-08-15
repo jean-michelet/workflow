@@ -22,11 +22,8 @@ const workflow = new Workflow();
 
 workflow.addTransition("publish", new Transition("draft", "published"));
 
-const canPublish = workflow.can("draft", "publish"); // true
-```
-
-```ts
-const canRepublish = workflow.can("published", "publish"); // false
+workflow.can("draft", "publish"); // true
+workflow.can("published", "publish"); // false
 ```
 
 ### Multi-Origin Transitions
@@ -46,11 +43,11 @@ workflow.can("aborted", "archive"); // true
 workflow.can("completed", "archive"); // true
 ```
 
-## ClassWorkflow Class
+## ClassWorkflow class
 
-The `ClassWorkflow` allows you to apply transitions directly to an entity’s state property. It is particularly useful when working with classes or objects that have a specific property representing their state.
+The `ClassWorkflow` allows you to apply transitions directly to an entity’s state property. It is particularly useful when working with classes that have a specific property representing their state.
 
-### Example: ClassWorkflow
+### Example
 
 Suppose you have a `Post` class with a `status` property that tracks the state of the post:
 
@@ -81,7 +78,7 @@ console.log(post.status); // Output: "published"
 
 In this example, the `ClassWorkflow` manages the state transitions of the `Post` instance. The `apply` method automatically updates the entity's `status` property based on the defined transitions. If the transition isn't allowed, an error is thrown, ensuring that invalid transitions are handled properly.
 
-### Handling Unexpected States
+### Handling unexpected states
 
 Both `Workflow` and `ClassWorkflow` support a `detectUnexpectedState` option. When enabled, this option throws an error if an entity is in an unexpected state that hasn't been accounted for in the transitions.
 
