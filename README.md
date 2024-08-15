@@ -54,7 +54,7 @@ console.log(workflow.can("archive", "completed")); // true
 
 ## ClassWorkflow class
 
-The `ClassWorkflow` allows you to check and apply transitions directly to an entity’s state property. It is particularly useful when working with classes that have a specific property representing their state.
+The `ClassWorkflow` allows you to check and apply transitions directly to an entity’s state property. It is particularly useful when working with classes.
 
 ### Example
 
