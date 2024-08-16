@@ -1,113 +1,89 @@
 # Workflow
 
-> This package is still experimental and may change radically until the next minor version.
+> **Note:** This package is still experimental and may change significantly until the next minor version.
 
-If you've been programming for a while, you've likely encountered workflows. They represent the various **states** and **transitions** that an entity can go through in a system.
+Workflows represent the various **states** and **transitions** that an entity can go through in a system. For example, let's say you're developing a task management application. You'll need to establish some rules:
 
-For example, let's say you're developing a blog and want to allow users to share posts. You'll need to establish some rules:
-
-- When a user creates a post, does it start as a `draft`?
-- Can a post move directly from `draft` to `published`, or does it need to be `moderated` first?
-- You might allow deleting `draft`s, but should `published` posts only be `archived`?
+- When a user creates a task, does it start as `new`?
+- Can a task move directly from `in progress` to `completed`, or does it need to be `reviewed` first?
+- You might allow deleting `new` tasks, but should `completed` tasks only be `archived`?
 
 These kinds of questions can be tricky, and it's crucial to represent this logic clearly in your code.
 
 ## Install
-```
+
+```bash
 npm i @jean-michelet/workflow
 ```
 
-## Workflow class
+## Workflow
 
-The `Workflow` class allows you to define transitions between different states. These transitions can be represented as simple state changes (`Transition`) or as transitions with multiple origins (`MultiOriginTransition`).
+The `Workflow` class lets you define state transitions and apply them to the state property of an entity. You can define transitions from a single state or from multiple states.
 
-In this example, the post can move from `draft` to `published`:
-
-```ts
-import { Transition, Workflow } from "@jean-michelet/workflow";
-
-const workflow = new Workflow();
-
-workflow.addTransition("publish", new Transition("draft", "published"));
-
-console.log(workflow.can("publish", "draft")); // true
-console.log(workflow.can("publish", "published")); // false
-```
-
-### Multi-Origin Transitions
-
-A `MultiOriginTransition` allows an entity to transition to a single target state from multiple states.
-
-In this example, the post can move to the `archived` state from either `aborted` or `completed` states:
+In this example, a task can move through several stages in its lifecycle: from `new` to `in progress`, then either to `completed` or `canceled`, and finally be archived from either the `canceled` or `completed` states:
 
 ```ts
-import { MultiOriginTransition, Workflow } from "@jean-michelet/workflow";
+// Example in typecript, but also works with vanilla JS
+import {
+  Transition,
+  MultiOriginTransition,
+  Workflow,
+} from "@jean-michelet/workflow";
 
-const workflow = new Workflow();
-
-workflow.addTransition(
-  "archive",
-  new MultiOriginTransition(["aborted", "completed"], "archived")
-);
-
-console.log(workflow.can("archive", "aborted")); // true
-console.log(workflow.can("archive", "completed")); // true
-```
-
-## ClassWorkflow class
-
-The `ClassWorkflow` allows you to check and apply transitions directly to an entity’s state property. It is particularly useful when working with classes and TypeScript.
-
-### Example
-
-Suppose you have a `Post` class with a `status` property that tracks the state of the post:
-
-```ts
-import { ClassWorkflow, Transition } from "@jean-michelet/workflow";
-
-class Post {
-  status = "draft";
+class Task {
+  status = "new";
 }
 
-const wf = new ClassWorkflow({
-  entity: Post,
+const workflow = new Workflow<Task>({
   stateProperty: "status",
 });
 
-wf.addTransition("publish", new Transition("draft", "published"));
+workflow.addTransition("start", new Transition("new", "in progress"));
+workflow.addTransition("complete", new Transition("in progress", "completed"));
+workflow.addTransition("cancel", new Transition("in progress", "canceled"));
+workflow.addTransition(
+  "archive",
+  new MultiOriginTransition(["canceled", "completed"], "archived")
+);
 
-const post = new Post();
+const task = new Task();
 
-if (wf.can("publish", post)) {
-  wf.apply("publish", post);
+if (workflow.can("start", task)) {
+  workflow.apply("start", task);
 }
+console.log(task.status); // Output: "in progress"
 
-console.log(post.status); // Output: "published"
+if (workflow.can("cancel", task)) {
+  workflow.apply("cancel", task);
+}
+console.log(task.status); // Output: "canceled"
+
+if (workflow.can("archive", task)) {
+  workflow.apply("archive", task);
+}
+console.log(task.status); // Output: "archived"
 ```
 
-In this example, the `ClassWorkflow` manages the state transitions of the `Post` instance. The `apply` method automatically updates the entity's `status` property based on the defined transitions. If the transition isn't allowed, an error is thrown.
+### Handling Unexpected States
 
-### Handling unexpected states
-
-Both `Workflow` and `ClassWorkflow` support a `detectUnexpectedState` option. When enabled, this option throws an error if an entity is in an unexpected state that hasn't been accounted for in the transitions.
+The `Workflow` class supports a `detectUnexpectedState` option. When enabled, this option throws an error if an entity is in an unexpected state that hasn't been accounted for in the defined transitions:
 
 ```ts
-import { ClassWorkflow, Transition } from "@jean-michelet/workflow";
+// Example in typecript, but also works with vanilla JS
+import { Workflow, Transition } from "@jean-michelet/workflow";
 
-class Post {
-  status = "draft";
+class Task {
+  status = "unknown";
 }
 
-const wf = new ClassWorkflow({
-  entity: Post,
+const workflow = new Workflow<Task>({
   stateProperty: "status",
   detectUnexpectedState: true,
 });
 
-wf.addTransition("publish", new Transition("draft", "published"));
+workflow.addTransition("start", new Transition("new", "in progress"));
 
-const post = new Post();
-post.status = "unknown";
+const task = new Task();
 
-wf.can("publish", post); // throw an error "The instance has an unexpected state 'unknown'"
+workflow.can("start", task); // Error: "The instance has an unexpected state 'unknown'"
 ```

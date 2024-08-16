@@ -38,64 +38,7 @@ export class MultiOriginTransition implements ITransition {
   }
 }
 
-export interface BaseWorkflowOptions {
-  detectUnexpectedState?: boolean;
-}
-
-export abstract class BaseWorkflow {
-  public transitions: Map<string, ITransition> = new Map();
-  protected detectUnexpectedState: boolean;
-  protected states = new Set<State>();
-
-  constructor(options: BaseWorkflowOptions = {}) {
-    this.detectUnexpectedState = options.detectUnexpectedState ?? false;
-  }
-
-  addTransition(name: string, transition: ITransition): void {
-    if (!this.transitions.has(name)) {
-      this.transitions.set(name, transition);
-    }
-  }
-
-  getTransition(name: string) {
-    const transition = this.transitions.get(name);
-    if (!transition) {
-      throw new Error(`Transition '${name}' not found.`);
-    }
-
-    return transition;
-  }
-
-  protected doDetectUnexpectedState(currentState: State) {
-    if (this.detectUnexpectedState && !this.states.has(currentState)) {
-      throw new Error(
-        `The instance has an unexpected state '${currentState.toString()}'`
-      );
-    }
-  }
-}
-
-export class Workflow extends BaseWorkflow {
-  /**
-   * Try to perform the transition
-   * If success, return the next state
-   * If fails, return null
-   */
-  can(transitionName: string, currentState: State) {
-    const transition = this.getTransition(transitionName);
-
-    const state = transition.tryTransition(currentState);
-    if (state) return true;
-
-    this.doDetectUnexpectedState(currentState);
-
-    return false;
-  }
-}
-
-type Constructor<T = object> = new (...args: unknown[]) => T;
-export interface ClassWorkflowOptions<T> extends BaseWorkflowOptions {
-  entity: Constructor<T>;
+export interface WorkflowOptions<T> {
   stateProperty: Extract<
     {
       [K in keyof T]: T[K] extends string | number ? K : never;
@@ -105,19 +48,15 @@ export interface ClassWorkflowOptions<T> extends BaseWorkflowOptions {
   detectUnexpectedState?: boolean;
 }
 
-export class ClassWorkflow<T> extends BaseWorkflow {
-  private entity: Constructor<T>;
+export class Workflow<T = object> {
+  public transitions: Map<string, ITransition> = new Map();
+  protected detectUnexpectedState: boolean;
+  protected states = new Set<State>();
   private stateProperty: keyof T;
 
-  constructor(options: ClassWorkflowOptions<T>) {
-    super({
-      detectUnexpectedState: options.detectUnexpectedState ?? false,
-    });
-
-    this.entity = options.entity;
+  constructor(options: WorkflowOptions<T>) {
+    this.detectUnexpectedState = options.detectUnexpectedState ?? false;
     this.stateProperty = options.stateProperty;
-
-    this.validateProperty();
   }
 
   can(transitionName: string, instance: T) {
@@ -154,13 +93,25 @@ export class ClassWorkflow<T> extends BaseWorkflow {
     instance[this.stateProperty] = nextState as T[keyof T];
   }
 
-  private validateProperty() {
-    const entity = new this.entity();
-    if (typeof entity[this.stateProperty] === "undefined") {
+  addTransition(name: string, transition: ITransition): void {
+    if (!this.transitions.has(name)) {
+      this.transitions.set(name, transition);
+    }
+  }
+
+  getTransition(name: string) {
+    const transition = this.transitions.get(name);
+    if (!transition) {
+      throw new Error(`Transition '${name}' not found.`);
+    }
+
+    return transition;
+  }
+
+  private doDetectUnexpectedState(currentState: State) {
+    if (this.detectUnexpectedState && !this.states.has(currentState)) {
       throw new Error(
-        `Property '${String(
-          this.stateProperty
-        )}' does not exist in the provided entity.`
+        `The instance has an unexpected state '${currentState.toString()}'`
       );
     }
   }
