@@ -1,7 +1,4 @@
 # Workflow
-
-> **Note:** This package is still experimental and may change significantly until the next minor version.
-
 Workflows represent the various **states** and **transitions** that an entity can go through in a system. For example, let's say you're developing a task management application. You'll need to establish some rules:
 
 - When a user creates a task, does it start as `new`?
